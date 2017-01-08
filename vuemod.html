@@ -1,31 +1,51 @@
 <html>
-	<head>
-		<title>vuemod</title>
-	</head>
-	<body>
-		<div id="app-7">
-		  <ol>
-		    <!-- Now we provide each todo-item with the todo object    -->
-		    <!-- it's representing, so that its content can be dynamic -->
-		    <todo-item v-for="item in groceryList" v-bind:todo="item"></todo-item>
-		  </ol>
-		</div>
-	</body>
-	<script src="https://unpkg.com/vue/dist/vue.js"></script>
-	<script>
-		Vue.component('todo-item', {
-		  props: ['todo'],
-		  template: '<li>{{ todo.text }}</li>'
-		});
-		var app7 = new Vue({
-		  el: '#app-7',
-		  data: {
-		    groceryList: [
-		      { text: 'Vegetables' },
-		      { text: 'Cheese' },
-		      { text: 'Whatever else humans are supposed to eat' }
-		    ]
-		  }
-		});
-	</script>
+<head>
+	<title>vuemod</title>
+</head>
+<body>
+	<svg id="app" width="1000" height="600">
+		<box v-for="item in boxes" v-bind:box="item"></box>
+	</svg>
+</body>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script>
+Vue.component('box', {
+	props: ['box'],
+	template: '<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" transform="translate(50, 50)">\
+					<rect height="20" stroke="black" fill="none"/>\
+					<text x=".1em" y=".9em">{{ box.text }}</text>\
+				</g>',
+	directives: {
+		adjust_size: {
+			inserted: sizeAroundText,
+			componentUpdated: sizeAroundText,
+		},
+	},
+});
+
+var app = new Vue({
+	el: '#app',
+	data: {
+		boxes: [
+		{ text: 'Vegetables' },
+		// { text: 'Cheese' },
+		// { text: 'Whatever' }
+		]
+	}
+});
+
+function changeText () {
+	app.boxes[0].text = 'asd';
+}
+
+function sizeAroundText(el) {
+	console.log('sizeAroundText');
+	// size the rect around the text
+    var rect = el.children[0];
+    var text = el.children[1];
+    var bb = text.getBBox();
+    rect.setAttribute('width', bb.width + 2 * bb.x);
+    rect.setAttribute('height', bb.height);
+}
+</script>
 </html>
