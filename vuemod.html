@@ -11,7 +11,7 @@
 <script>
 Vue.component('box', {
 	props: ['box'],
-	template: '<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" transform="translate(50, 50)">\
+	template: '<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" :transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
 					<rect height="20" stroke="black" fill="none"/>\
 					<text x=".1em" y=".9em">{{ box.text }}</text>\
 				</g>',
@@ -27,9 +27,9 @@ var app = new Vue({
 	el: '#app',
 	data: {
 		boxes: [
-		{ text: 'Vegetables' },
-		// { text: 'Cheese' },
-		// { text: 'Whatever' }
+		{text: 'Vegetables', x: 10, y: 10},
+		{text: 'Cheese', x: 20, y: 40},
+		{text: 'Whatever', x: 30, y: 70}
 		]
 	}
 });
