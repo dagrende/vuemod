@@ -4,17 +4,24 @@
 </head>
 <body>
 	<svg id="app" width="1000" height="600">
-		<box v-for="item in boxes" v-bind:box="item"></box>
+		<boxes v-for="item in boxes" v-bind:box="item"></boxes>
+		<box :box="{text: 'container', x: 20, y: 250}">
+			<box :box="{text: 'child', x: 10, y: 10}"></box>
+		</box>
 	</svg>
 </body>
+
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
+
 <script>
-Vue.component('box', {
+var boxVar = Vue.component('box', {
 	props: ['box'],
-	template: '<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" :transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
-					<rect height="20" stroke="black" fill="none"/>\
-					<text x=".1em" y=".9em">{{ box.text }}</text>\
-				</g>',
+	template:
+		'<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" :transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
+			<rect height="20" stroke="black" fill="none"/>\
+			<text x=".1em" y=".9em">{{ box.text }}</text>\
+			<slot></slot>\
+		</g>',
 	directives: {
 		adjust_size: {
 			inserted: sizeAroundText,
@@ -23,14 +30,37 @@ Vue.component('box', {
 	},
 });
 
+Vue.component('boxes', {
+	props: ['box'],
+	template:
+		'<box :box="box">\
+			<boxes v-for="item in box.children" v-bind:box="item"></boxes>\
+		</box>'
+});
+
+Vue.component('dbox', {
+	props: ['box'],
+	template:
+		'<box :box="box"></box>'
+});
+
 var app = new Vue({
 	el: '#app',
 	data: {
 		boxes: [
 		{text: 'Vegetables', x: 10, y: 10},
 		{text: 'Cheese', x: 20, y: 40},
-		{text: 'Whatever', x: 30, y: 70}
-		]
+		{text: 'Whatever', x: 30, y: 70},
+		{text: 'parent', x: 40, y: 100, children: [
+				{text: 'child0', x: 10, y: 10, children: [
+						{text: 'child1', x: 10, y: 10},
+						{text: 'child2', x: 10, y: 40}
+					]
+				},
+				{text: 'child3', x: 10, y: 80}
+			]
+		}
+	]
 	}
 });
 
