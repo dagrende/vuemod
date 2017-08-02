@@ -4,10 +4,8 @@
 </head>
 <body>
 	<svg id="app" width="1000" height="600">
-		<boxes v-for="item in boxes" v-bind:box="item"></boxes>
-		<box :box="{text: 'container', x: 20, y: 250}">
-			<box :box="{text: 'child', x: 10, y: 10}"></box>
-		</box>
+		<dbox v-for="item in boxes" v-bind:box="item" :key="item.text"
+				:typef="()=>item.text.length % 3 == 0 ? 'box2' : 'box'"></dbox>
 	</svg>
 </body>
 
@@ -17,7 +15,8 @@
 var boxVar = Vue.component('box', {
 	props: ['box'],
 	template:
-		'<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" :transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
+		'<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" \
+				:transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
 			<rect height="20" stroke="black" fill="none"/>\
 			<text x=".1em" y=".9em">{{ box.text }}</text>\
 			<slot></slot>\
@@ -30,28 +29,38 @@ var boxVar = Vue.component('box', {
 	},
 });
 
-Vue.component('boxes', {
+var boxVar2 = Vue.component('box2', {
 	props: ['box'],
 	template:
-		'<box :box="box">\
-			<boxes v-for="item in box.children" v-bind:box="item"></boxes>\
-		</box>'
+		'<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" :transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
+			<rect height="20" stroke="black" fill="yellow"/>\
+			<text x=".1em" y=".9em">{{ box.text }}</text>\
+			<slot></slot>\
+		</g>',
+	directives: {
+		adjust_size: {
+			inserted: sizeAroundText,
+			componentUpdated: sizeAroundText,
+		},
+	},
 });
 
+var defaultType = 'box2';
+
 Vue.component('dbox', {
-	props: ['box'],
+	props: ['box', 'typef'],
 	template:
-		'<box :box="box"></box>'
+		'<component :is="typef()" :box="box"></component>'
 });
 
 var app = new Vue({
 	el: '#app',
 	data: {
 		boxes: [
-		{text: 'Vegetables', x: 10, y: 10},
-		{text: 'Cheese', x: 20, y: 40},
-		{text: 'Whatever', x: 30, y: 70},
-		{text: 'parent', x: 40, y: 100, children: [
+		{type: 'box', text: 'Vegetables', x: 10, y: 10},
+		{type: 'box', text: 'Cheese', x: 20, y: 40},
+		{type: 'box2', text: 'Whatever', x: 30, y: 70},
+		{type: 'box', text: 'parent', x: 40, y: 100, children: [
 				{text: 'child0', x: 10, y: 10, children: [
 						{text: 'child1', x: 10, y: 10},
 						{text: 'child2', x: 10, y: 40}
