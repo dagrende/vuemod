@@ -4,8 +4,8 @@
 </head>
 <body>
 	<svg id="app" width="1000" height="600">
-		<dbox v-for="item in boxes" v-bind:box="item" :key="item.text"
-				:typef="()=>item.text.length % 3 == 0 ? 'box2' : 'box'"></dbox>
+		<treecomp v-for="item in boxes" v-bind:box="item" :key="item.text"
+				:typef="(b)=>b.text.length % 3 == 0 ? 'box2' : 'box'"></treecomp>
 	</svg>
 </body>
 
@@ -47,10 +47,18 @@ var boxVar2 = Vue.component('box2', {
 
 var defaultType = 'box2';
 
+Vue.component('treecomp', {
+	props: ['box', 'typef'],
+	template:
+		'<component :is="typef(box)" :box="box">\
+			<treecomp :typef="typef" v-for="item in box.children" :box="item" :key="item.text"></treecomp>\
+		</component>'
+});
+
 Vue.component('dbox', {
 	props: ['box', 'typef'],
 	template:
-		'<component :is="typef()" :box="box"></component>'
+		'<component :is="typef(box)" :box="box"></component>'
 });
 
 var app = new Vue({
