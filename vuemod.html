@@ -15,34 +15,25 @@
 var boxVar = Vue.component('box', {
 	props: ['box'],
 	template:
-		'<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" \
+		'<g v-on:click="box.text = \'qwe\'" class="node" \
 				:transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
 			<rect height="20" stroke="black" fill="none"/>\
 			<text x=".1em" y=".9em">{{ box.text }}</text>\
 			<slot></slot>\
 		</g>',
-	directives: {
-		adjust_size: {
-			inserted: sizeAroundText,
-			componentUpdated: sizeAroundText,
-		},
-	},
+	mounted: sizeAroundText,
 });
 
 var boxVar2 = Vue.component('box2', {
 	props: ['box'],
 	template:
-		'<g v-on:click="box.text = \'qwe\'" v-adjust_size class="node" :transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
+		'<g v-on:click="box.text = \'qwe\'" class="node" \
+				:transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
 			<rect height="20" stroke="black" fill="yellow"/>\
 			<text x=".1em" y=".9em">{{ box.text }}</text>\
 			<slot></slot>\
 		</g>',
-	directives: {
-		adjust_size: {
-			inserted: sizeAroundText,
-			componentUpdated: sizeAroundText,
-		},
-	},
+		mounted: sizeAroundText,
 });
 
 var defaultType = 'box2';
@@ -65,19 +56,19 @@ var app = new Vue({
 	el: '#app',
 	data: {
 		boxes: [
-		{type: 'box', text: 'Vegetables', x: 10, y: 10},
-		{type: 'box', text: 'Cheese', x: 20, y: 40},
-		{type: 'box2', text: 'Whatever', x: 30, y: 70},
-		{type: 'box', text: 'parent', x: 40, y: 100, children: [
-				{text: 'child0', x: 10, y: 10, children: [
-						{text: 'child1', x: 10, y: 10},
-						{text: 'child2', x: 10, y: 40}
-					]
-				},
-				{text: 'child3', x: 10, y: 80}
-			]
-		}
-	]
+			{type: 'box', text: 'Vegetables', x: 10, y: 10},
+			{type: 'box', text: 'Cheese', x: 20, y: 40},
+			{type: 'box2', text: 'Whatever', x: 30, y: 70},
+			{type: 'box', text: 'parent', x: 40, y: 100, children: [
+					{text: 'child0', x: 10, y: 10, children: [
+							{text: 'child1', x: 10, y: 10},
+							{text: 'child2', x: 10, y: 40}
+						]
+					},
+					{text: 'child3', x: 10, y: 80}
+				]
+			}
+		]
 	}
 });
 
@@ -85,14 +76,14 @@ function changeText () {
 	app.boxes[0].text = 'asd';
 }
 
-function sizeAroundText(el) {
-	console.log('sizeAroundText');
-	// size the rect around the text
-    var rect = el.children[0];
-    var text = el.children[1];
-    var bb = text.getBBox();
-    rect.setAttribute('width', bb.width + 2 * bb.x);
-    rect.setAttribute('height', bb.height);
+// size the el child rect around el child text
+function sizeAroundText() {
+	var el = this.$el;
+  var rect = el.children[0];
+  var text = el.children[1];
+  var bb = text.getBBox();
+  rect.setAttribute('width', bb.width + 2 * bb.x);
+  rect.setAttribute('height', bb.height);
 }
 </script>
 </html>
