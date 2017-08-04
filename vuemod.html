@@ -4,52 +4,76 @@
 </head>
 <body>
 	<svg id="app" width="1000" height="600">
-		<treecomp v-for="item in boxes" v-bind:box="item" :key="item.text"
-				:typef="(b)=>b.text.length % 3 == 0 ? 'box2' : 'box'"></treecomp>
+		<treecomp v-for="item in boxes" :data="item" :key="item.text" :layout="vboxLayout(3, 3)"
+				:typef="(b)=>'box'"></treecomp>
+		<box :data="{text: 'manual', x: 10, y: 250}" :layout="vboxLayout()"/>
 	</svg>
 </body>
 
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
 
 <script>
-var boxVar = Vue.component('box', {
-	props: ['box'],
+Vue.component('box', {
+	props: ['data', 'layout'],
 	template:
-		'<g v-on:click="box.text = \'qwe\'" class="node" \
-				:transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
+		'<g v-on:click="data.text = \'qwe\'" class="node" \
+				:transform="\'translate(\' + data.x + \',\' + data.y + \')\'">\
 			<rect height="20" stroke="black" fill="none"/>\
-			<text x=".1em" y=".9em">{{ box.text }}</text>\
+			<text x=".1em" y=".9em">{{ data.text }}</text>\
 			<slot></slot>\
 		</g>',
-	mounted: sizeAroundText,
+	mounted: function() {
+		console.log('mounted', this.data.text);
+		var internalSize = getTextSize(this);
+		var childSize = this.layout ? this.layout(this, {x: 0, y: internalSize.height}) : {width: 0, height: 0};
+		var rect = this.$el.children[0];
+		rect.setAttribute('width', Math.max(internalSize.width, childSize.width));
+		rect.setAttribute('height', Math.max(internalSize.height, childSize.height));
+	},
 });
 
-var boxVar2 = Vue.component('box2', {
-	props: ['box'],
-	template:
-		'<g v-on:click="box.text = \'qwe\'" class="node" \
-				:transform="\'translate(\' + box.x + \',\' + box.y + \')\'">\
-			<rect height="20" stroke="black" fill="yellow"/>\
-			<text x=".1em" y=".9em">{{ box.text }}</text>\
-			<slot></slot>\
-		</g>',
-		mounted: sizeAroundText,
-});
+function getTextSize(t) {
+	var el = t.$el;
+  var text = el.children[1];
+  var bb = text.getBBox();
+	return {width: bb.width + 2 * bb.x, height: bb.height + 2}
+}
 
-var defaultType = 'box2';
+function vboxLayout(margin, gap) {
+	return function(t, topLeft) {
+		var el = t.$el,
+			x = topLeft.x + (margin || 0)
+			y = topLeft.y + (margin || 0),
+			width = 0,
+			anyChild = false;
 
+		for (var child of t.$children) {
+			var childBounds = child.$el.getBBox();
+			child.data.y = y;
+			child.data.x = x;
+			y += childBounds.height + (gap || 0);
+			width = Math.max(width, childBounds.width);
+			anyChild = true;
+		}
+		if (anyChild) {
+			return {width: width + topLeft.x + 2 * (margin || 0), height: y - (gap || 0) + (margin || 0)}
+		} else {
+			return {width: 0, height: 0}
+		}
+	}
+}
+
+// create a hierarchy of nodes based on a javascript tree structure
+// starts with a node based on data, and then inside that node all
+// nodes based on data.children recursively
+// the node type is determined by calling typef with the object representing the node instance
+// child nodes can be placed by a layout manager, if supplied
 Vue.component('treecomp', {
-	props: ['box', 'typef'],
+	props: ['data', 'typef', 'layout'],
 	template:
-		'<component :is="typef(box)" :box="box">\
-			<treecomp :typef="typef" v-for="item in box.children" :box="item" :key="item.text"></treecomp>\
+		'<component :is="typef(data)" :data="data" :layout="layout">\
+			<treecomp :typef="typef" v-for="item in data.children" :data="item" :key="item.text" :layout="layout"></treecomp>\
 		</component>'
-});
-
-Vue.component('dbox', {
-	props: ['box', 'typef'],
-	template:
-		'<component :is="typef(box)" :box="box"></component>'
 });
 
 var app = new Vue({
@@ -65,25 +89,14 @@ var app = new Vue({
 							{text: 'child2', x: 10, y: 40}
 						]
 					},
-					{text: 'child3', x: 10, y: 80}
+					{text: 'child3xxxxx', x: 10, y: 100}
 				]
 			}
 		]
+	},
+	methods: {
+		vboxLayout
 	}
 });
-
-function changeText () {
-	app.boxes[0].text = 'asd';
-}
-
-// size the el child rect around el child text
-function sizeAroundText() {
-	var el = this.$el;
-  var rect = el.children[0];
-  var text = el.children[1];
-  var bb = text.getBBox();
-  rect.setAttribute('width', bb.width + 2 * bb.x);
-  rect.setAttribute('height', bb.height);
-}
 </script>
 </html>
